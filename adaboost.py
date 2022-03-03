@@ -5,7 +5,7 @@ import numpy as np
 import math
 from sklearn.feature_selection import SelectPercentile, f_classif
 import pickle
-
+// 
 class Adaboost:
     def __init__(self, T = 10):
         """
