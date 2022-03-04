@@ -5,7 +5,7 @@ import numpy as np
 import math
 from sklearn.feature_selection import SelectPercentile, f_classif
 import pickle
-// 
+
 class Adaboost:
     def __init__(self, T = 10):
         """
@@ -16,7 +16,7 @@ class Adaboost:
         self.alphas = []
         self.clfs = []
 
-    def train(self, dataset):
+    def train(self, dataset, dataset_test):
         """
         Trains the Viola Jones classifier on a set of images.
           Parameters:
@@ -54,7 +54,7 @@ class Adaboost:
         for t in range(self.T):
             print("Run No. of Iteration: %d" % (t+1))
             # Normalize weights
-            weights = weights / np.linalg.norm(weights)
+            weights = weights / np.sum(weights)
             # Compute error and select best classifiers
             clf, error = self.selectBest(featureVals, iis, labels, features, weights)
             #update weights
@@ -69,6 +69,16 @@ class Adaboost:
             self.alphas.append(alpha)
             self.clfs.append(clf)
             print("Chose classifier: %s with accuracy: %f and alpha: %f" % (str(clf), len(accuracy) - sum(accuracy), alpha))
+            """
+            evaluate and save
+            """
+            self.save('clf_200_1_10')
+            self = self.load('clf_200_1_10')
+            print('\nEvaluate your classifier with training dataset')
+            utils.evaluate(self, dataset)
+
+            print('\nEvaluate your classifier with test dataset')
+            utils.evaluate(self, dataset_test)
     
     def buildFeatures(self, imageShape):
         """
@@ -149,7 +159,21 @@ class Adaboost:
         """
         # Begin your code (Part 2)
         # raise NotImplementedError("To be implemented")
+        bestError = -np.inf
+        bestClf_i = 0
+        for i in range(len(features)):
+            epsilon = 1
+            for j in range(len(iis)):
+                h = (featureVals[i][j] < 0)
+                epsilon = epsilon * (1 - weights[j] * abs(h-labels[j])) ## my method
+                ## epsilon = epsilon + weight[j] * abs(h-labels[j])
+            ## if bestError > epsilon:
+            if bestError < epsilon: ## my method
+                bestError = epsilon
+                bestClf_i = i  
+        bestClf = WeakClassifier(features[bestClf_i])
         # End your code (Part 2)
+        bestError = 1 - bestError ## my method
         return bestClf, bestError
     
     def classify(self, image):
