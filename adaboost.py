@@ -159,21 +159,23 @@ class Adaboost:
         """
         # Begin your code (Part 2)
         # raise NotImplementedError("To be implemented")
-        bestError = -np.inf
+        bestError = -np.inf ## my method
+        ## bestError = np.inf ##
         bestClf_i = 0
         for i in range(len(features)):
-            epsilon = 1
+            epsilon = 1 ## my method
+            ## epsilon = 0 ##
             for j in range(len(iis)):
                 h = (featureVals[i][j] < 0)
                 epsilon = epsilon * (1 - weights[j] * abs(h-labels[j])) ## my method
-                ## epsilon = epsilon + weight[j] * abs(h-labels[j])
-            ## if bestError > epsilon:
+                ## epsilon = epsilon + weights[j] * abs(h-labels[j]) ##
+            ## if bestError > epsilon: ##
             if bestError < epsilon: ## my method
                 bestError = epsilon
                 bestClf_i = i  
         bestClf = WeakClassifier(features[bestClf_i])
-        # End your code (Part 2)
         bestError = 1 - bestError ## my method
+        # End your code (Part 2)
         return bestClf, bestError
     
     def classify(self, image):

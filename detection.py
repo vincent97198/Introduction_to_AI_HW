@@ -16,6 +16,9 @@ def detect(dataPath, clf):
       Returns:
         No returns.
     """
+    
+    # Begin your code (Part 4)
+    # raise NotImplementedError("To be implemented")
     clf = adaboost.Adaboost.load('clf_200_1_10')
     with open(dataPath,'r') as detect_file:
         while Line := detect_file.readline():
@@ -36,6 +39,4 @@ def detect(dataPath, clf):
                     color = (0,0,255)
                 cv2.rectangle(image_draw, (x, y), (x+x_len, y+y_len), color, 2)
             cv2.imwrite('new_'+file_name,image_draw)
-    # Begin your code (Part 4)
-    # raise NotImplementedError("To be implemented")
     # End your code (Part 4)
