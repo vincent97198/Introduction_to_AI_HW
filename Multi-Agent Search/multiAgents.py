@@ -138,7 +138,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         #raise NotImplementedError("To be implemented")
         
         num_of_agents = gameState.getNumAgents()
-        def dfs(gameState,depth,agentIndex):
+        def minimax(gameState,depth,agentIndex):
             if agentIndex >= num_of_agents:
                 agentIndex = agentIndex - num_of_agents
             if (depth == 0 and agentIndex == 0) or gameState.isWin() or gameState.isLose():
@@ -148,7 +148,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             if depth == self.depth:
                 MAX = -math.inf
                 for pacman_action in gameState.getLegalActions(agentIndex):
-                    tmp = dfs(gameState.getNextState(agentIndex,pacman_action),depth-1,agentIndex+1)
+                    tmp = minimax(gameState.getNextState(agentIndex,pacman_action),depth-1,agentIndex+1)
                     if MAX < tmp:
                         MAX = tmp
                         ret = pacman_action
@@ -157,15 +157,15 @@ class MinimaxAgent(MultiAgentSearchAgent):
             if agentIndex == 0:
                 MAX = -math.inf
                 for pacman_action in gameState.getLegalActions(agentIndex):
-                    MAX = max(MAX,dfs(gameState.getNextState(agentIndex,pacman_action),depth-1,agentIndex+1))
+                    MAX = max(MAX,minimax(gameState.getNextState(agentIndex,pacman_action),depth-1,agentIndex+1))
                 return MAX
             else:
                 MIN = math.inf
                 for ghost_action in gameState.getLegalActions(agentIndex):
-                    MIN = min(MIN,dfs(gameState.getNextState(agentIndex,ghost_action),depth,agentIndex+1))
+                    MIN = min(MIN,minimax(gameState.getNextState(agentIndex,ghost_action),depth,agentIndex+1))
                 return MIN
             
-        return dfs(gameState,self.depth,0)
+        return minimax(gameState,self.depth,0)
         # End your code (Part 1)
 
 
@@ -179,7 +179,51 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         # Begin your code (Part 2)
-        raise NotImplementedError("To be implemented")
+        #raise NotImplementedError("To be implemented")
+        num_of_agents = gameState.getNumAgents()
+        def alpha_beta_pruning(gameState,depth,agentIndex,alpha,beta):
+            if agentIndex >= num_of_agents:
+                agentIndex = agentIndex - num_of_agents
+            if (depth == 0 and agentIndex == 0) or gameState.isWin() or gameState.isLose():
+                return self.evaluationFunction(gameState)
+            
+            ret = 0
+            eval_alpha = alpha
+            eval_beta = beta
+            if depth == self.depth:
+                MAX = -math.inf
+                for pacman_action in gameState.getLegalActions(agentIndex):
+                    tmp = alpha_beta_pruning(gameState.getNextState(agentIndex,pacman_action),depth-1,agentIndex+1,eval_alpha,eval_beta)
+                    eval_alpha = max(eval_alpha,tmp)
+                    if MAX < tmp:
+                        MAX = tmp
+                        ret = pacman_action
+                return ret
+
+            if agentIndex == 0:
+                MAX = -math.inf
+                eval_MAX = -math.inf
+                for pacman_action in gameState.getLegalActions(agentIndex):
+                    tmp = alpha_beta_pruning(gameState.getNextState(agentIndex,pacman_action),depth-1,agentIndex+1,eval_alpha,eval_beta)
+                    MAX = max(MAX,tmp)
+                    eval_alpha = max(eval_alpha,tmp)
+                    if MAX > eval_beta:
+                        return MAX
+                return MAX
+            else:
+                MIN = math.inf
+                for ghost_action in gameState.getLegalActions(agentIndex):
+                    if agentIndex == 1:
+                        tmp = alpha_beta_pruning(gameState.getNextState(agentIndex,ghost_action),depth,agentIndex+1,eval_alpha,eval_beta)
+                    else:
+                        tmp = alpha_beta_pruning(gameState.getNextState(agentIndex,ghost_action),depth,agentIndex+1,eval_alpha,eval_beta)
+                    eval_beta = min(eval_beta,tmp)
+                    MIN = min(MIN,tmp)
+                    if MIN < eval_alpha:
+                        return MIN
+                return MIN
+            
+        return alpha_beta_pruning(gameState,self.depth,0,-math.inf,math.inf)
         # End your code (Part 2)
 
 
