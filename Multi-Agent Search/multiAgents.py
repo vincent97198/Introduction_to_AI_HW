@@ -2,6 +2,7 @@ from util import manhattanDistance
 from game import Directions
 import random, util
 from game import Agent
+import math
 
 class ReflexAgent(Agent):
     """
@@ -134,7 +135,37 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         # Begin your code (Part 1)
-        raise NotImplementedError("To be implemented")
+        #raise NotImplementedError("To be implemented")
+        
+        num_of_agents = gameState.getNumAgents()
+        def dfs(gameState,depth,agentIndex):
+            if agentIndex >= num_of_agents:
+                agentIndex = agentIndex - num_of_agents
+            if (depth == 0 and agentIndex == 0) or gameState.isWin() or gameState.isLose():
+                return self.evaluationFunction(gameState)
+            
+            ret = 0
+            if depth == self.depth:
+                MAX = -math.inf
+                for pacman_action in gameState.getLegalActions(agentIndex):
+                    tmp = dfs(gameState.getNextState(agentIndex,pacman_action),depth-1,agentIndex+1)
+                    if MAX < tmp:
+                        MAX = tmp
+                        ret = pacman_action
+                return ret
+
+            if agentIndex == 0:
+                MAX = -math.inf
+                for pacman_action in gameState.getLegalActions(agentIndex):
+                    MAX = max(MAX,dfs(gameState.getNextState(agentIndex,pacman_action),depth-1,agentIndex+1))
+                return MAX
+            else:
+                MIN = math.inf
+                for ghost_action in gameState.getLegalActions(agentIndex):
+                    MIN = min(MIN,dfs(gameState.getNextState(agentIndex,ghost_action),depth,agentIndex+1))
+                return MIN
+            
+        return dfs(gameState,self.depth,0)
         # End your code (Part 1)
 
 
