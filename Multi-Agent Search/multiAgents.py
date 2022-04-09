@@ -1,4 +1,9 @@
-from util import manhattanDistance
+import util
+from turtle import width
+
+from numpy import mat
+from pacman import GhostRules
+from util import FixedRandom, Queue, manhattanDistance
 from game import Directions
 import random, util
 from game import Agent
@@ -142,7 +147,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             if agentIndex >= num_of_agents:
                 agentIndex = agentIndex - num_of_agents
             if (depth == 0 and agentIndex == 0) or gameState.isWin() or gameState.isLose():
-                return self.evaluationFunction(gameState)
+                return self.evaluatiosnFunction(gameState)
             
             ret = 0
             if depth == self.depth:
@@ -273,14 +278,73 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         return expectimax(gameState,self.depth,0)
         # End your code (Part 3)
 
-
 def betterEvaluationFunction(currentGameState):
     """
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (Part 4).
     """
     # Begin your code (Part 4)
-    raise NotImplementedError("To be implemented")
+    # if currentGameState.isWin():
+    #     return 100000000
+    if currentGameState.isLose():
+        return -500000000
+    
+    GhostStates = currentGameState.getGhostStates()
+    PacmanPosition = currentGameState.getPacmanPosition()
+    minGhostDistance = min([manhattanDistance(PacmanPosition, state.getPosition()) for state in GhostStates])
+    score = minGhostDistance * 0.05 + 1000
+
+    Walls = currentGameState.getWalls()
+    Foods = currentGameState.getFood()
+    minFoodDistance = Foods.height + Foods.width
+    capsule = currentGameState.getCapsules()
+    # minCapsuleDistance = Foods.height + Foods.width
+    # for (tmpx,tmpy) in capsule:
+    #     minCapsuleDistance = min(minCapsuleDistance,manhattanDistance(PacmanPosition, [tmpx,tmpy]))
+
+    can_go_dict = {}
+    for x in range(0,Foods.width):
+        for y in range(0,Foods.height):
+            can_go_dict[(x,y)] = math.inf
+    can_go_dict[(PacmanPosition[0],PacmanPosition[1])] = 0
+    q = util.Queue()
+    q.push((PacmanPosition[0],PacmanPosition[1]))
+    while not q.isEmpty():
+        (nowx,nowy) = q.pop()
+        (prex,prey) = (nowx,nowy)
+        for rng in range(0,4):
+            if rng == 0 and nowx + 1 < Foods.width and Walls[nowx+1][nowy] == False:
+                nowx = nowx + 1
+            elif rng == 1 and nowx - 1 >= 0 and Walls[nowx-1][nowy] == False:
+                nowx = nowx - 1
+            elif rng == 2 and nowy + 1 < Foods.height and Walls[nowx][nowy+1] == False:
+                nowy = nowy + 1
+            elif rng == 3 and nowy - 1 >= 0 and Walls[nowx][nowy-1] == False:
+                nowy = nowy - 1
+        if can_go_dict[(nowx,nowy)] > can_go_dict[(prex,prey)] + 1:
+            can_go_dict[(nowx,nowy)] = can_go_dict[(prex,prey)] + 1
+
+    eat = 0
+    for x in range(0,Foods.width):
+        for y in range(0,Foods.height):
+            if  Foods[x][y]:
+                minFoodDistance = min(minFoodDistance,manhattanDistance(PacmanPosition,[x,y]))
+                eat = eat + 1
+
+    score = score - minFoodDistance - (Foods.height+Foods.width) * eat * 50 - len(capsule) * (Foods.height+Foods.width) * 500 + currentGameState.getScore() * 0.02
+    
+    
+    # check = 0
+    # for (x,y) in can_go_dict:
+    #     if Foods[x][y]:
+    #         check = check + 1
+
+    # if len(can_go_dict) >= 2:
+    #     score = score + 2
+    # else:
+    #     score = score - 2
+    
+    return score
     # End your code (Part 4)
 
 # Abbreviation
