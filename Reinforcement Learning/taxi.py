@@ -39,7 +39,7 @@ class Agent():
             action: The action to be evaluated.
         """
         # Begin your code
-        if self.epsilon < random.random():
+        if self.epsilon > random.random():
             return self.env.action_space.sample()
         else:
             return np.argmax(self.qtable[state])

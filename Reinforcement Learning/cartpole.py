@@ -7,7 +7,6 @@ total_reward = []
 episode = 3000
 decay = 0.045
 
-
 class Agent():
     def __init__(self, env, epsilon=0.05, learning_rate=0.5, GAMMA=0.97, num_bins=7):
         """
@@ -58,7 +57,8 @@ class Agent():
             1. This can be done with a numpy function.
         """
         # Begin your code
-        pass
+        piece_len = (upper_bound-lower_bound)/num_bins
+        return np.linspace(lower_bound+piece_len,upper_bound, num = num_bins - 1,endpoint=False)
         # End your code
 
     def discretize_value(self, value, bins):
@@ -80,7 +80,7 @@ class Agent():
             1. This can be done with a numpy function.				
         """
         # Begin your code
-        pass
+        return np.searchsorted(bins,value,side='right')
         # End your code
 
     def discretize_observation(self, observation):
@@ -103,7 +103,10 @@ class Agent():
             3. You might find something useful in Agent.__init__()
         """
         # Begin your code
-        pass
+        ret = []
+        for i in range(4):
+            ret.append(self.discretize_value(observation[i],self.bins[i]))
+        return ret
         # End your code
 
     def choose_action(self, state):
@@ -118,7 +121,10 @@ class Agent():
             action: The action to be evaluated.
         """
         # Begin your code
-        pass
+        if self.epsilon > np.random.rand():
+            return self.env.action_space.sample()
+        else:
+            return np.argmax(self.qtable[tuple(state)])
         # End your code
 
     def learn(self, state, action, reward, next_state, done):
@@ -136,11 +142,29 @@ class Agent():
             None (Don't need to return anything)
         """
         # Begin your code
-        pass
+        self.qtable[tuple(state)][action] = (1 - self.learning_rate) * self.qtable[tuple(state)][action] + self.learning_rate * (reward + self.gamma * np.max(self.qtable[tuple(next_state)]))
         # End your code
 
         # You can add some conditions to decide when to save your table
-        np.save("./Tables/cartpole_table.npy", self.qtable)
+        if done:
+            rewards = []
+            for _ in range(3):
+                state = self.discretize_observation(self.env.reset())
+                count = 0
+                while True:
+                    count += 1
+                    action = np.argmax(self.qtable[tuple(state)])
+                    next_observation, _, done, _ = self.env.step(action)
+
+                    next_state = self.discretize_observation(next_observation)
+
+                    if done == True:
+                        rewards.append(count)
+                        break
+
+                    state = next_state
+            if np.min(rewards) >= 150:
+                np.save("./Tables/cartpole_table.npy", self.qtable)
 
     def check_max_Q(self):
         """
@@ -156,7 +180,8 @@ class Agent():
             max_q: the max Q value of initial state(self.env.reset())
         """
         # Begin your code
-        pass
+        state = self.discretize_observation(self.env.reset())
+        return np.max(self.qtable[tuple(state)])
         # End your code
 
 
@@ -182,8 +207,7 @@ def train(env):
             action = training_agent.choose_action(state)
             next_observation, reward, done, _ = env.step(action)
 
-            next_state = training_agent.discretize_observation(
-                next_observation)
+            next_state = training_agent.discretize_observation(next_observation)
 
             training_agent.learn(state, action, reward, next_state, done)
 
@@ -249,13 +273,13 @@ if __name__ == "__main__":
     The main funtion
     '''
     # Please change to the assigned seed number in the Google sheet
-    SEED = 20
+    SEED = 75
 
     env = gym.make('CartPole-v0')
     seed(SEED)
     env.seed(SEED)
     env.action_space.seed(SEED)
-
+    
     if not os.path.exists("./Tables"):
         os.mkdir("./Tables")
 
