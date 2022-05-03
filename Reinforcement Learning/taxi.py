@@ -60,7 +60,7 @@ class Agent():
             None (Don't need to return anything)
         """
         # Begin your code
-        self.qtable[state][action] = (1 - self.learning_rate) * self.qtable[state][action] + self.learning_rate * (reward + self.gamma * np.max(self.qtable[next_state]))
+        self.qtable[state][action] = (1 - self.learning_rate) * self.qtable[state][action] + self.learning_rate * (reward + self.gamma * np.max(self.qtable[next_state]) * (1 - done))
         # End your code
 
         # You can add some conditions to decide when to save your table

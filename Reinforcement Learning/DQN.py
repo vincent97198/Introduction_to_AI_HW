@@ -140,11 +140,19 @@ class Agent():
             self.target_net.load_state_dict(self.evaluate_net.state_dict())
 
         # Begin your code
-        pass
+        state, action, reward, next_state, done = self.buffer.sample(self.batch_size)
+        q_eval = self.evaluate_net.forward(torch.FloatTensor(state)).gather(1,torch.LongTensor(action).view(self.batch_size, 1))
+        q_next = torch.max(self.target_net.forward(torch.FloatTensor(next_state)).detach(),dim = 1)
+        q_tar = torch.FloatTensor(reward).view(self.batch_size,1) + self.gamma * q_next[0].view(self.batch_size, 1) * (1 - torch.FloatTensor(done).view(self.batch_size,1))
+        loss = nn.MSELoss()(q_eval,q_tar)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
         # End your code
 
         # You can add some conditions to decide when to save your neural network model
-        torch.save(self.target_net.state_dict(), "./Tables/DQN.pt")
+        if self.count % 5000 == 0:
+            torch.save(self.target_net.state_dict(), "./Tables/DQN.pt")
 
     def choose_action(self, state):
         """
@@ -162,9 +170,13 @@ class Agent():
         """
         with torch.no_grad():
             # Begin your code
-            pass
+            if self.epsilon > np.random.random():
+                return self.env.action_space.sample()
+            else:
+                Q = self.target_net.forward(
+                torch.FloatTensor(state)).squeeze(0).detach()
+                return int(torch.argmax(Q).numpy())
             # End your code
-        return action
 
     def check_max_Q(self):
         """
@@ -180,7 +192,9 @@ class Agent():
             max_q: the max Q value of initial state(self.env.reset())
         """
         # Begin your code
-        pass
+        Q = self.target_net.forward(
+        torch.FloatTensor(self.env.reset())).squeeze(0).detach()
+        return int(torch.max(Q).numpy())
         # End your code
 
 
@@ -216,7 +230,7 @@ def train(env):
             state = next_state
     total_rewards.append(rewards)
 
-
+import time
 def test(env):
     """
     Test the agent on the given environment.
@@ -262,7 +276,7 @@ if __name__ == "__main__":
     The main funtion
     '''
     # Please change to the assigned seed number in the Google sheet
-    SEED = 20
+    SEED = 75
 
     env = gym.make('CartPole-v0')
     seed(SEED)

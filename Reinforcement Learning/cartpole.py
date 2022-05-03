@@ -142,7 +142,7 @@ class Agent():
             None (Don't need to return anything)
         """
         # Begin your code
-        self.qtable[tuple(state)][action] = (1 - self.learning_rate) * self.qtable[tuple(state)][action] + self.learning_rate * (reward + self.gamma * np.max(self.qtable[tuple(next_state)]))
+        self.qtable[tuple(state)][action] = (1 - self.learning_rate) * self.qtable[tuple(state)][action] + self.learning_rate * (reward + self.gamma * np.max(self.qtable[tuple(next_state)]) * (1 - done))
         # End your code
 
         # You can add some conditions to decide when to save your table
@@ -236,7 +236,6 @@ def test(env):
     """
     testing_agent = Agent(env)
 
-    # Change the filename to your student id
     testing_agent.qtable = np.load("./Tables/cartpole_table.npy")
     rewards = []
 
