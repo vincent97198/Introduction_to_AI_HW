@@ -217,7 +217,6 @@ def train(env):
         while True:
             count += 1
             agent.count += 1
-            # env.render()
             action = agent.choose_action(state)
             next_state, reward, done, _ = env.step(action)
             agent.buffer.insert(state, int(action), reward,
@@ -230,7 +229,6 @@ def train(env):
             state = next_state
     total_rewards.append(rewards)
 
-import time
 def test(env):
     """
     Test the agent on the given environment.

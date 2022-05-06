@@ -133,7 +133,7 @@ def train(env):
 
     total_reward.append(rewards)
 
-
+import time
 def test(env):
     """
     Test the agent on the given environment.
@@ -162,7 +162,7 @@ def test(env):
             state = next_state
     # Please change to the assigned initial state in the Google sheet
     state = 252
-
+    
     print(f"average reward: {np.mean(rewards)}")
     extract_state(state)
     print(f"max Q:{testing_agent.check_max_Q(state)}")
@@ -188,7 +188,7 @@ if __name__ == "__main__":
     seed(SEED)
     env.seed(SEED)
     env.action_space.seed(SEED)
-        
+
     if not os.path.exists("./Tables"):
         os.mkdir("./Tables")
 
